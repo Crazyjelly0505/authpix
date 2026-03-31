@@ -15,6 +15,10 @@ contract AuthPix is ERC721URIStorage {
     mapping(uint256 => bool) public modelAgree;
     mapping(uint256 => bool) public merchantAgree;
 
+    uint256[] public allTokens;
+    mapping(address => uint256[]) public tokensByModel;
+    mapping(address => uint256[]) public tokensByMerchant;
+
     event ModelRegistered(address indexed model);
     event Mint(
         address indexed model,
@@ -40,6 +44,10 @@ contract AuthPix is ERC721URIStorage {
 
         modelOf[nextTokenId] = msg.sender;
         merchantOf[nextTokenId] = _merchant;
+
+        allTokens.push(nextTokenId);
+        tokensByModel[msg.sender].push(nextTokenId);
+        tokensByMerchant[_merchant].push(nextTokenId);
 
         emit Mint(msg.sender, _merchant, nextTokenId, _tokenURI);
     }
@@ -77,5 +85,22 @@ contract AuthPix is ERC721URIStorage {
             merchantOf[_tokenId],
             tokenURI(_tokenId)
         );
+    }
+
+
+    function getAllTokens() public view returns (uint256[] memory) {
+        return allTokens;
+    }
+
+    function getTokensByModel(address _model) public view returns (uint256[] memory) {
+        return tokensByModel[_model];
+    }
+
+    function getTokensByMerchant(address _merchant) public view returns (uint256[] memory) {
+        return tokensByMerchant[_merchant];
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return allTokens.length;
     }
 }

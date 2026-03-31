@@ -159,4 +159,86 @@ describe("AuthPix", function () {
       expect(tokenuri).to.equal("ipfs://test");
     });
   });
+
+  describe("Enumeration", function () {
+    async function enumInit() {
+      const { apix, merchant, model, user1 } = await deployNFT();
+      await apix.connect(model).registerModel();
+      await apix.connect(user1).registerModel();
+      return { apix, merchant, model, user1 };
+    }
+
+    it("should track all tokens", async function () {
+      const { apix, merchant, model, user1 } = await enumInit();
+
+      await apix.connect(model).mint("ipfs://1", merchant);
+      await apix.connect(model).mint("ipfs://2", user1);
+      await apix.connect(user1).mint("ipfs://3", merchant);
+
+      const allTokens = await apix.getAllTokens();
+      expect(allTokens.length).to.equal(3);
+      expect(allTokens[0]).to.equal(1);
+      expect(allTokens[1]).to.equal(2);
+      expect(allTokens[2]).to.equal(3);
+    });
+
+    it("should track tokens by model", async function () {
+      const { apix, merchant, model, user1 } = await enumInit();
+
+      await apix.connect(model).mint("ipfs://1", merchant);
+      await apix.connect(model).mint("ipfs://2", user1);
+      await apix.connect(user1).mint("ipfs://3", merchant);
+
+      const modelTokens = await apix.getTokensByModel(model.address);
+      expect(modelTokens.length).to.equal(2);
+      expect(modelTokens[0]).to.equal(1);
+      expect(modelTokens[1]).to.equal(2);
+
+      const user1Tokens = await apix.getTokensByModel(user1.address);
+      expect(user1Tokens.length).to.equal(1);
+      expect(user1Tokens[0]).to.equal(3);
+    });
+
+    it("should track tokens by merchant", async function () {
+      const { apix, merchant, model, user1 } = await enumInit();
+
+      await apix.connect(model).mint("ipfs://1", merchant);
+      await apix.connect(model).mint("ipfs://2", user1);
+      await apix.connect(user1).mint("ipfs://3", merchant);
+
+      const merchantTokens = await apix.getTokensByMerchant(merchant.address);
+      expect(merchantTokens.length).to.equal(2);
+      expect(merchantTokens[0]).to.equal(1);
+      expect(merchantTokens[1]).to.equal(3);
+
+      const user1AsMerchantTokens = await apix.getTokensByMerchant(user1.address);
+      expect(user1AsMerchantTokens.length).to.equal(1);
+      expect(user1AsMerchantTokens[0]).to.equal(2);
+    });
+
+    it("should return correct totalSupply", async function () {
+      const { apix, merchant, model } = await enumInit();
+
+      expect(await apix.totalSupply()).to.equal(0);
+
+      await apix.connect(model).mint("ipfs://1", merchant);
+      expect(await apix.totalSupply()).to.equal(1);
+
+      await apix.connect(model).mint("ipfs://2", merchant);
+      expect(await apix.totalSupply()).to.equal(2);
+    });
+
+    it("should not remove from arrays after burn", async function () {
+      const { apix, merchant, model } = await enumInit();
+
+      await apix.connect(model).mint("ipfs://1", merchant);
+      await apix.connect(merchant).agreeBurn(1);
+      await apix.connect(model).agreeBurn(1);
+      await apix.connect(model).burn(1);
+
+      const allTokens = await apix.getAllTokens();
+      expect(allTokens.length).to.equal(1);
+      expect(await apix.modelOf(1)).to.equal(ZeroAddress);
+    });
+  });
 });
