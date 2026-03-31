@@ -60,7 +60,7 @@ contract AuthPix is ERC721URIStorage {
     function burn(uint256 _tokenId) public {
         require(merchantOf[_tokenId] == msg.sender || modelOf[_tokenId] == msg.sender, "Not authorized");
         require(modelAgree[_tokenId] == true, "Model disagree");
-        require(merchantAgree[_tokenId] == true, "merchant disagree");
+        require(merchantAgree[_tokenId] == true, "Merchant disagree");
         _burn(_tokenId);
 
         emit Burn(modelOf[_tokenId], merchantOf[_tokenId], _tokenId);
