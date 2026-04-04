@@ -1,83 +1,187 @@
-# 🏗 Scaffold-ETH 2
+# AuthPix
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+<div align="center">
+  <img src="packages/nextjs/public/logo.png" alt="AuthPix Logo" width="200" />
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+  **Decentralized Image Authentication Protocol**
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+  为买家提供实拍保障 · 保护创作者合法权益
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+</div>
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+---
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+## 📖 项目背景
 
-## Requirements
+在电商蓬勃发展的今天，商品图片的真实性问题日益突出：
 
-Before you begin, you need to install the following tools:
+- **买家困扰**：商家盗用精美图片，实物与图片严重不符，消费者权益受损
+- **创作者困境**：摄影师、模特的原创作品被随意盗用，劳动成果得不到尊重
+- **信任危机**：买卖双方缺乏有效的信任机制，平台公信力不足
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+**AuthPix** 应运而生 —— 一个基于区块链的去中心化图片认证协议。
 
-## Quickstart
+---
 
-To get started with Scaffold-ETH 2, follow the steps below:
+## 🎯 创作意图
 
-1. Install dependencies if it was skipped in CLI:
+### 对于买家
+- 🔍 **真实验证**：通过 NFT 确权，验证商品图片的真实来源
+- 🛡️ **权益保障**：购买的商品图片经过认证，避免"货不对板"
+- 📜 **溯源追踪**：清晰记录图片从拍摄到销售的全过程
+
+### 对于商家
+- 📸 **原创保护**：上传实拍图铸造 NFT，确立图片所有权
+- ⭐ **信誉积累**：真实商品图片建立商家信誉，赢得消费者信任
+- 💼 **商业价值**：认证图片成为商家的数字资产
+
+### 对于模特/创作者
+- 🎨 **版权确权**：作品上链存证，版权归属清晰可查
+- 💰 **收益保障**：与商家建立授权关系，权益受到保护
+- 🤝 **合作透明**：双方确认机制，确保创作得到认可
+
+---
+
+## ✨ 核心功能
+
+| 功能 | Model / Creator | Merchant / User |
+|------|-----------------|-----------------|
+| 注册身份 | ✅ | - |
+| 铸造 NFT | ✅ | - |
+| 查询图片信息 | ✅ | ✅ |
+| 按地址筛选 | ✅ | ✅ |
+| 同意销毁 | ✅ | ✅ (相关方) |
+| 确认销毁 | ✅ | ✅ (双方同意后) |
+
+### 工作流程
 
 ```
-cd my-dapp-example
+模特/创作者                      商家
+    │                            │
+    │  1. 注册成为 Model          │
+    │───────────────────────────>│
+    │                            │
+    │  2. 铸造 NFT (IPFS + 商家地址)
+    │───────────────────────────>│
+    │                            │
+    │       NFT 记录图片信息       │
+    │<──────────────────────────>│
+    │                            │
+    │  3. 双方确认后可销毁 NFT      │
+    │<──────────────────────────>│
+```
+
+---
+
+## 🛠️ 技术栈
+
+- **智能合约**: Solidity + Hardhat + OpenZeppelin
+- **前端框架**: Next.js + TypeScript
+- **Web3 基础设施**: Scaffold-ETH 2 + Wagmi + Viem
+- **钱包连接**: RainbowKit
+- **UI 组件**: DaisyUI + Tailwind CSS
+- **存储**: IPFS (去中心化存储)
+
+---
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Node.js >= 18
+- Yarn 或 npm
+- MetaMask 或其他 Web3 钱包
+
+### 安装依赖
+
+```bash
+git clone https://github.com/your-username/authpix.git
+cd authpix
 yarn install
 ```
 
-2. Run a local network in the first terminal:
+### 本地开发
 
-```
+```bash
+# 终端 1: 启动本地区块链
+cd packages/hardhat
 yarn chain
-```
 
-This command starts a local Ethereum network using Hardhat. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/hardhat/hardhat.config.ts`.
-
-3. On a second terminal, deploy the test contract:
-
-```
+# 终端 2: 部署合约
+cd packages/hardhat
 yarn deploy
+
+# 终端 3: 启动前端
+cd packages/nextjs
+yarn dev
 ```
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
+访问 http://localhost:3000 查看应用。
 
-4. On a third terminal, start your NextJS app:
+### 部署到测试网
+
+```bash
+# 1. 配置环境变量
+cd packages/hardhat
+cp .env.example .env
+# 编辑 .env 填入你的配置
+
+# 2. 导入钱包
+yarn account:import
+
+# 3. 获取 Sepolia 测试 ETH
+# https://sepoliafaucet.com
+
+# 4. 部署合约
+yarn deploy --network sepolia
+```
+
+---
+
+## 📁 项目结构
 
 ```
-yarn start
+authpix/
+├── packages/
+│   ├── hardhat/                 # 智能合约
+│   │   ├── contracts/
+│   │   │   └── AuthPix.sol      # 核心合约
+│   │   ├── deploy/              # 部署脚本
+│   │   └── test/                # 合约测试
+│   │
+│   └── nextjs/                  # 前端应用
+│       ├── app/                 # Next.js 页面
+│       ├── components/          # React 组件
+│       │   ├── Welcome.tsx      # 身份选择
+│       │   ├── Model.tsx        # 模特面板
+│       │   └── User.tsx         # 用户面板
+│       └── public/              # 静态资源
+│
+└── README.md
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+---
 
-Run smart contract test with `yarn hardhat:test`
+## 🔐 安全说明
 
-- Edit your smart contracts in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
+- 所有图片信息存储在 IPFS，确保不可篡改
+- NFT 权益关系记录在区块链上，公开透明
+- 销毁操作需双方确认，防止单方面恶意操作
+- 请妥善保管钱包私钥，切勿泄露
 
+---
 
-## Documentation
+## 📄 许可证
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+本项目基于 [MIT License](LICENSE) 开源。
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+---
 
-## Contributing to Scaffold-ETH 2
+<div align="center">
 
-We welcome contributions to Scaffold-ETH 2!
+**让每一张商品图都有迹可循，让每一位创作者都得到尊重。**
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+Made with ❤️ by AuthPix Team
+
+</div>

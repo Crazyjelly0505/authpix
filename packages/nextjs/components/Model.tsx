@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 export const Model = () => {
@@ -13,28 +14,50 @@ export const Model = () => {
   const { writeContractAsync: writeAuthPix } = useScaffoldWriteContract({ contractName: "AuthPix" });
 
   const handleIdAction = async (name: "burn" | "agreeBurn") => {
-    if (!tokenId) return alert("请输入 Token ID");
+    if (!tokenId) {
+      toast.error("Please enter Token ID");
+      return;
+    }
     setLoading(name);
     try {
       await writeAuthPix({
         functionName: name,
         args: [BigInt(tokenId)],
       });
+      toast.success(`${name === "burn" ? "Burn" : "Agree"} transaction submitted!`);
     } catch (e) {
       console.error(e);
+      toast.error("Transaction failed. Please try again.");
     }
     setLoading(null);
   };
 
   const mintOnclick = async () => {
+    if (!ipfs) {
+      toast.error("Please enter IPFS URI");
+      return;
+    }
+    if (!merchantAddress) {
+      toast.error("Please enter Merchant Address");
+      return;
+    }
+    if (!/^0x[a-fA-F0-9]{40}$/.test(merchantAddress)) {
+      toast.error("Invalid merchant address format");
+      return;
+    }
+
     setLoading("mint");
     try {
       await writeAuthPix({
         functionName: "mint",
         args: [ipfs, merchantAddress],
       });
+      toast.success("NFT minted successfully!");
+      setIpfs("");
+      setMerchantAddress("");
     } catch (e) {
       console.error(e);
+      toast.error("Mint failed. Make sure you are registered as a model.");
     }
     setLoading(null);
   };
@@ -45,8 +68,10 @@ export const Model = () => {
       await writeAuthPix({
         functionName: "registerModel",
       });
+      toast.success("Registered as Model successfully!");
     } catch (e) {
       console.error(e);
+      toast.error("Registration failed. You may already be registered.");
     }
     setLoading(null);
   };
@@ -75,7 +100,13 @@ export const Model = () => {
 
   const handleQuery = async (action: () => Promise<unknown>, name: string) => {
     setLoading(name);
-    await action();
+    try {
+      await action();
+      toast.success("Query completed!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Query failed.");
+    }
     setLoading(null);
   };
 
@@ -88,18 +119,19 @@ export const Model = () => {
 
         {/* Register & Mint */}
         <div className="w-full max-w-md p-3 bg-white/80 backdrop-blur rounded-xl shadow">
+          <h3 className="font-semibold text-sm text-gray-600 mb-2">Register & Mint</h3>
           <div className="flex gap-2 mb-2">
             <input
-              className="input input-bordered flex-1"
+              className="input input-bordered flex-1 text-sm"
               type="text"
-              placeholder="IPFS URI"
+              placeholder="IPFS URI (required)"
               value={ipfs}
               onChange={e => setIpfs(e.target.value)}
             />
             <input
-              className="input input-bordered flex-1"
+              className="input input-bordered flex-1 text-sm"
               type="text"
-              placeholder="Merchant Address"
+              placeholder="Merchant Address (required)"
               value={merchantAddress}
               onChange={e => setMerchantAddress(e.target.value)}
             />
@@ -110,7 +142,7 @@ export const Model = () => {
               onClick={registerModel}
               disabled={!!loading}
             >
-              {loading === "register" ? "Registering..." : "Register"}
+              {loading === "register" ? "Registering..." : "Register as Model"}
             </button>
             <button
               className={`btn btn-primary btn-sm flex-1 ${loading === "mint" ? "loading" : ""}`}
@@ -124,16 +156,17 @@ export const Model = () => {
 
         {/* Query */}
         <div className="w-full max-w-md p-3 bg-white/80 backdrop-blur rounded-xl shadow">
+          <h3 className="font-semibold text-sm text-gray-600 mb-2">Query & Actions</h3>
           <div className="flex gap-2 mb-2">
             <input
-              className="input input-bordered flex-1"
+              className="input input-bordered flex-1 text-sm"
               type="number"
               placeholder="Token ID"
               value={tokenId}
               onChange={e => setTokenId(e.target.value)}
             />
             <input
-              className="input input-bordered flex-1"
+              className="input input-bordered flex-1 text-sm"
               type="text"
               placeholder="Search Address"
               value={searchAddress}
@@ -167,7 +200,7 @@ export const Model = () => {
               onClick={() => handleIdAction("agreeBurn")}
               disabled={!!loading}
             >
-              {loading === "agreeBurn" ? "Processing..." : "Agree"}
+              {loading === "agreeBurn" ? "Processing..." : "Agree Burn"}
             </button>
             <button
               className={`btn btn-error btn-sm ${loading === "burn" ? "loading" : ""}`}
@@ -199,6 +232,9 @@ export const Model = () => {
           )}
           {merchantTokens && merchantTokens.length > 0 && (
             <p className="text-xs">Merchant Tokens: {merchantTokens.map((id: bigint) => id.toString()).join(", ")}</p>
+          )}
+          {!photoInfo && !allTokens && !merchantTokens && (
+            <p className="text-xs text-gray-400">No results yet. Try a query above.</p>
           )}
         </div>
       </div>

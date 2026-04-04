@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
@@ -51,16 +52,32 @@ export const User = () => {
         functionName: name,
         args: [BigInt(searchTokenId)],
       });
+      toast.success(`${name === "burn" ? "Burn" : "Agree"} transaction submitted!`);
     } catch (e) {
       console.error(e);
+      toast.error("Transaction failed. Please try again.");
     }
     setLoading(null);
   };
 
   const handleQuery = async (action: () => Promise<unknown>, name: string) => {
     setLoading(name);
-    await action();
+    try {
+      await action();
+      toast.success("Query completed!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Query failed.");
+    }
     setLoading(null);
+  };
+
+  const handleSearch = async () => {
+    if (!searchTokenId) {
+      toast.error("Please enter a Token ID");
+      return;
+    }
+    await handleQuery(fetchInfo, "search");
   };
 
   return (
@@ -72,17 +89,18 @@ export const User = () => {
 
         {/* Query by Token ID */}
         <div className="w-full max-w-md p-3 bg-white/80 backdrop-blur rounded-xl shadow">
+          <h3 className="font-semibold text-sm text-gray-600 mb-2">Search by Token ID</h3>
           <div className="flex gap-2">
             <input
               type="number"
-              placeholder="Token ID"
-              className="input input-bordered flex-1"
+              placeholder="Enter Token ID"
+              className="input input-bordered flex-1 text-sm"
               value={searchTokenId}
               onChange={e => setSearchTokenId(e.target.value)}
             />
             <button
               className={`btn btn-primary ${loading === "search" ? "loading" : ""}`}
-              onClick={() => handleQuery(fetchInfo, "search")}
+              onClick={handleSearch}
               disabled={!!loading}
             >
               {loading === "search" ? "Searching..." : "Search"}
@@ -92,10 +110,11 @@ export const User = () => {
 
         {/* Query by Address */}
         <div className="w-full max-w-md p-3 bg-white/80 backdrop-blur rounded-xl shadow">
+          <h3 className="font-semibold text-sm text-gray-600 mb-2">Filter by Address</h3>
           <input
             type="text"
-            placeholder="Search by Address"
-            className="input input-bordered w-full mb-2"
+            placeholder="Enter wallet address"
+            className="input input-bordered w-full mb-2 text-sm"
             value={searchAddress}
             onChange={e => setSearchAddress(e.target.value)}
           />
@@ -140,22 +159,25 @@ export const User = () => {
             </div>
 
             {canOperate && (
-              <div className="flex gap-2 justify-center mt-2">
-                <button
-                  className={`btn btn-warning btn-sm ${loading === "agreeBurn" ? "loading" : ""}`}
-                  onClick={() => handleAction("agreeBurn")}
-                  disabled={!!loading}
-                >
-                  {loading === "agreeBurn" ? "Processing..." : "Agree Burn"}
-                </button>
-                <button
-                  className={`btn btn-error btn-sm ${loading === "burn" ? "loading" : ""}`}
-                  onClick={() => handleAction("burn")}
-                  disabled={!!loading}
-                >
-                  {loading === "burn" ? "Processing..." : "Confirm Burn"}
-                </button>
-              </div>
+              <>
+                <div className="divider my-2 text-xs">You are authorized to operate</div>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    className={`btn btn-warning btn-sm ${loading === "agreeBurn" ? "loading" : ""}`}
+                    onClick={() => handleAction("agreeBurn")}
+                    disabled={!!loading}
+                  >
+                    {loading === "agreeBurn" ? "Processing..." : "Agree Burn"}
+                  </button>
+                  <button
+                    className={`btn btn-error btn-sm ${loading === "burn" ? "loading" : ""}`}
+                    onClick={() => handleAction("burn")}
+                    disabled={!!loading}
+                  >
+                    {loading === "burn" ? "Processing..." : "Confirm Burn"}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -171,6 +193,9 @@ export const User = () => {
           )}
           {modelTokens && modelTokens.length > 0 && (
             <p className="text-xs">Model: {modelTokens.map((id: bigint) => id.toString()).join(", ")}</p>
+          )}
+          {!allTokens && !merchantTokens && !modelTokens && (
+            <p className="text-xs text-gray-400">No results yet. Try a query above.</p>
           )}
         </div>
       </div>

@@ -9,6 +9,11 @@ node_modules
 !.yarn/sdks
 !.yarn/versions
 
+# env files (DO NOT COMMIT)
+.env
+.env.local
+.env*.local
+
 # eslint
 .eslintcache
 
@@ -21,3 +26,11 @@ node_modules
 
 # cli
 dist
+
+# Next.js
+.next
+out
+
+# Hardhat
+cache
+artifacts
