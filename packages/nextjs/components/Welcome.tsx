@@ -4,18 +4,14 @@ interface WelcomeProps {
   setIdentity: (value: string) => void;
 }
 
-export const Welcome = ({ setIdentity }:WelcomeProps) => {
+export const Welcome = ({ setIdentity }: WelcomeProps) => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[url('/shop.png')] bg-cover bg-center overflow-hidden">
-
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-        <h1 className="text-[20vw] font-black text-white/5 uppercase tracking-tighter">
-          AuthPix
-        </h1>
+        <h1 className="text-[20vw] font-black text-white/5 uppercase tracking-tighter">AuthPix</h1>
       </div>
 
       <div className="relative z-10 flex flex-col items-center p-12 bg-black/30 backdrop-blur-xl rounded-[40px] border border-white/10 shadow-2xl">
-
         <h2 className="text-6xl font-black text-white mb-4 tracking-tight">
           Auth<span className="text-indigo-400">Pix</span>
         </h2>

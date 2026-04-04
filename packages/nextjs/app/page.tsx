@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import { useState } from "react";
-import { Welcome } from "~~/components/Welcome";
 import { Model } from "~~/components/Model";
 import { User } from "~~/components/User";
+import { Welcome } from "~~/components/Welcome";
 
 const Home = () => {
   const [identity, setIdentity] = useState<string>("");
@@ -37,6 +37,6 @@ const Home = () => {
       )}
     </main>
   );
-}
+};
 
 export default Home;

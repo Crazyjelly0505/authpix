@@ -8,34 +8,47 @@ export const Model = () => {
   const [merchantAddress, setMerchantAddress] = useState("");
   const [ipfs, setIpfs] = useState("");
   const [searchAddress, setSearchAddress] = useState("");
+  const [loading, setLoading] = useState<string | null>(null);
 
   const { writeContractAsync: writeAuthPix } = useScaffoldWriteContract({ contractName: "AuthPix" });
 
   const handleIdAction = async (name: "burn" | "agreeBurn") => {
     if (!tokenId) return alert("请输入 Token ID");
+    setLoading(name);
     try {
       await writeAuthPix({
         functionName: name,
         args: [BigInt(tokenId)],
       });
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(null);
   };
 
   const mintOnclick = async () => {
+    setLoading("mint");
     try {
       await writeAuthPix({
         functionName: "mint",
         args: [ipfs, merchantAddress],
       });
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(null);
   };
 
   const registerModel = async () => {
+    setLoading("register");
     try {
       await writeAuthPix({
         functionName: "registerModel",
       });
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(null);
   };
 
   const { data: total } = useScaffoldReadContract({
@@ -59,6 +72,12 @@ export const Model = () => {
     functionName: "getTokensByMerchant",
     args: [searchAddress],
   });
+
+  const handleQuery = async (action: () => Promise<unknown>, name: string) => {
+    setLoading(name);
+    await action();
+    setLoading(null);
+  };
 
   return (
     <div className="relative min-h-screen pt-24 pb-6 px-4 bg-[url('/in.png')] bg-cover bg-center">
@@ -86,8 +105,20 @@ export const Model = () => {
             />
           </div>
           <div className="flex gap-2">
-            <button className="btn btn-outline btn-sm flex-1" onClick={registerModel}>Register</button>
-            <button className="btn btn-primary btn-sm flex-1" onClick={mintOnclick}>Mint NFT</button>
+            <button
+              className={`btn btn-outline btn-sm flex-1 ${loading === "register" ? "loading" : ""}`}
+              onClick={registerModel}
+              disabled={!!loading}
+            >
+              {loading === "register" ? "Registering..." : "Register"}
+            </button>
+            <button
+              className={`btn btn-primary btn-sm flex-1 ${loading === "mint" ? "loading" : ""}`}
+              onClick={mintOnclick}
+              disabled={!!loading}
+            >
+              {loading === "mint" ? "Minting..." : "Mint NFT"}
+            </button>
           </div>
         </div>
 
@@ -109,12 +140,42 @@ export const Model = () => {
               onChange={e => setSearchAddress(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 justify-center">
-            <button className="btn btn-secondary btn-sm" onClick={() => getInfo()}>Info</button>
-            <button className="btn btn-secondary btn-sm" onClick={() => getAll()}>All</button>
-            <button className="btn btn-secondary btn-sm" onClick={() => getByMerchant()}>By Merchant</button>
-            <button className="btn btn-warning btn-sm" onClick={() => handleIdAction("agreeBurn")}>Agree</button>
-            <button className="btn btn-error btn-sm" onClick={() => handleIdAction("burn")}>Burn</button>
+          <div className="flex gap-2 justify-center flex-wrap">
+            <button
+              className={`btn btn-secondary btn-sm ${loading === "info" ? "loading" : ""}`}
+              onClick={() => handleQuery(getInfo, "info")}
+              disabled={!!loading}
+            >
+              {loading === "info" ? "Loading..." : "Info"}
+            </button>
+            <button
+              className={`btn btn-secondary btn-sm ${loading === "all" ? "loading" : ""}`}
+              onClick={() => handleQuery(getAll, "all")}
+              disabled={!!loading}
+            >
+              {loading === "all" ? "Loading..." : "All"}
+            </button>
+            <button
+              className={`btn btn-secondary btn-sm ${loading === "merchant" ? "loading" : ""}`}
+              onClick={() => handleQuery(getByMerchant, "merchant")}
+              disabled={!!loading}
+            >
+              {loading === "merchant" ? "Loading..." : "By Merchant"}
+            </button>
+            <button
+              className={`btn btn-warning btn-sm ${loading === "agreeBurn" ? "loading" : ""}`}
+              onClick={() => handleIdAction("agreeBurn")}
+              disabled={!!loading}
+            >
+              {loading === "agreeBurn" ? "Processing..." : "Agree"}
+            </button>
+            <button
+              className={`btn btn-error btn-sm ${loading === "burn" ? "loading" : ""}`}
+              onClick={() => handleIdAction("burn")}
+              disabled={!!loading}
+            >
+              {loading === "burn" ? "Processing..." : "Burn"}
+            </button>
           </div>
         </div>
 
@@ -125,14 +186,19 @@ export const Model = () => {
             <div className="text-xs space-y-0.5">
               <p>Model: {photoInfo[0]}</p>
               <p>Merchant: {photoInfo[1]}</p>
-              <p>URI: <a href={photoInfo[2]} target="_blank" className="link link-primary">View</a></p>
+              <p>
+                URI:{" "}
+                <a href={photoInfo[2]} target="_blank" className="link link-primary">
+                  View
+                </a>
+              </p>
             </div>
           )}
           {allTokens && allTokens.length > 0 && (
-            <p className="text-xs">All IDs: {allTokens.map(id => id.toString()).join(", ")}</p>
+            <p className="text-xs">All IDs: {allTokens.map((id: bigint) => id.toString()).join(", ")}</p>
           )}
           {merchantTokens && merchantTokens.length > 0 && (
-            <p className="text-xs">Merchant Tokens: {merchantTokens.map(id => id.toString()).join(", ")}</p>
+            <p className="text-xs">Merchant Tokens: {merchantTokens.map((id: bigint) => id.toString()).join(", ")}</p>
           )}
         </div>
       </div>
