@@ -68,6 +68,10 @@ const config: HardhatUserConfig = {
       url: "https://sepolia.base.org",
       accounts: [deployerPrivateKey],
     },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      timeout: 60000,
+    },
   },
   // Configuration for harhdat-verify plugin
   etherscan: {

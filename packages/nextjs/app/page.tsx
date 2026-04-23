@@ -1,41 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Model } from "~~/components/Model";
-import { User } from "~~/components/User";
-import { Welcome } from "~~/components/Welcome";
+import { First } from "~~/components/First";
+import { Header } from "~~/components/Header";
+import { Notice } from "~~/components/Notice";
 
 const Home = () => {
-  const [identity, setIdentity] = useState<string>("");
+  const [tab, setTab] = useState("home");
 
   return (
-    <main>
-      {identity === "" && <Welcome setIdentity={setIdentity} />}
-
-      {identity === "model" && (
-        <div>
-          <button
-            className="fixed top-20 left-4 z-40 btn btn-sm bg-gray-800 text-white hover:bg-gray-700"
-            onClick={() => setIdentity("")}
-          >
-            ← Return
-          </button>
-          <Model />
-        </div>
-      )}
-
-      {identity === "user" && (
-        <div>
-          <button
-            className="fixed top-20 left-4 z-40 btn btn-sm bg-gray-800 text-white hover:bg-gray-700"
-            onClick={() => setIdentity("")}
-          >
-            ← Return
-          </button>
-          <User />
-        </div>
-      )}
-    </main>
+    <>
+      <Header setTab={setTab} tab={tab} />
+      <main>{tab === "home" ? <First /> : <Notice />}</main>
+    </>
   );
 };
 

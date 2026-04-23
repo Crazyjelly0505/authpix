@@ -1,30 +1,53 @@
 "use client";
 
-import Image from "next/image";
 import { RainbowKitCustomConnectButton } from "./scaffold-eth";
-import { useAccount } from "wagmi";
+import { activeNavBtn, headerStyle, navBtn, navStyle, rightStyle } from "~~/components/ui/styles";
 
-export const Header = () => {
-  const { isConnected } = useAccount();
-
+export const Header = ({ setTab, tab }: { setTab: (tab: string) => void; tab: string }) => {
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-transparent">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md p-2 rounded-xl border border-white/10">
-          <Image src="/logo.png" alt="Logo" width={32} height={32} className="rounded-lg" />
-          <span className="font-bold text-xl text-white tracking-tight">AuthPix</span>
-        </div>
+    <div style={headerStyle}>
+      {/* 左侧导航 */}
+      <div style={navStyle}>
+        <button
+          onClick={() => setTab("home")}
+          style={{
+            ...navBtn,
+            ...(tab === "home" ? activeNavBtn : {}),
+          }}
+        >
+          首页
+        </button>
 
-        {isConnected && (
-          <div className="hidden md:block px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-xs text-black-200 uppercase tracking-widest">
-            Protocol Active
-          </div>
-        )}
+        <button
+          onClick={() => setTab("notice")}
+          style={{
+            ...navBtn,
+            ...(tab === "notice" ? activeNavBtn : {}),
+          }}
+        >
+          通知
+        </button>
       </div>
 
-      <div className="flex items-center">
+      {/* 中间标题 */}
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          fontWeight: 700,
+          fontSize: "16px",
+          color: "#111",
+          letterSpacing: "0.5px",
+        }}
+      >
+        AuthPix
+      </div>
+
+      {/* 右侧钱包 */}
+      <div style={rightStyle}>
         <RainbowKitCustomConnectButton />
       </div>
-    </header>
+    </div>
   );
 };

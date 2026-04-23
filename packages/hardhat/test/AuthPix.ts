@@ -85,11 +85,18 @@ describe("AuthPix", function () {
       expect(req.isReject).to.equal(true);
     });
 
-    it("should emit ApproveRequest event", async function () {
+    it("should emit ApproveRequest event with approved=true", async function () {
       const { apix, merchant, model, requestId } = await deployWithRequest();
       await expect(apix.connect(model).approveRequest(requestId, true))
         .to.emit(apix, "ApproveRequest")
-        .withArgs(requestId, merchant.address, model.address);
+        .withArgs(requestId, merchant.address, model.address, true);
+    });
+
+    it("should emit ApproveRequest event with approved=false", async function () {
+      const { apix, merchant, model, requestId } = await deployWithRequest();
+      await expect(apix.connect(model).approveRequest(requestId, false))
+        .to.emit(apix, "ApproveRequest")
+        .withArgs(requestId, merchant.address, model.address, false);
     });
 
     it("should revert if not model", async function () {
@@ -300,15 +307,20 @@ describe("AuthPix", function () {
       await expect(apix.connect(merchant).mint(requestId)).to.be.revertedWith("Need approve");
     });
 
-    it("should allow report multiple times", async function () {
+    it("should not allow duplicate report from same user", async function () {
       const { apix, tokenId } = await deployAndMint();
       await apix.report(tokenId);
-      let token = await apix.allTokens(tokenId);
-      expect(token.report).to.equal(true);
-      // 再次 report 不会报错，状态保持 true
-      await apix.report(tokenId);
-      token = await apix.allTokens(tokenId);
-      expect(token.report).to.equal(true);
+      await expect(apix.report(tokenId)).to.be.revertedWith("Already reported");
+    });
+
+    it("should allow different users to report same token", async function () {
+      const { apix, merchant, user, tokenId } = await deployAndMint();
+      await apix.connect(merchant).report(tokenId);
+      await apix.connect(user).report(tokenId);
+      const hasReported1 = await apix.hasReported(tokenId, merchant.address);
+      const hasReported2 = await apix.hasReported(tokenId, user.address);
+      expect(hasReported1).to.equal(true);
+      expect(hasReported2).to.equal(true);
     });
 
     it("should have correct timestamp order", async function () {

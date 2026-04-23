@@ -41,7 +41,7 @@ contract AuthPix is ERC721URIStorage {
     mapping(address => uint256[]) public modelToRequest;
     mapping(address => uint256[]) public merchantToRequestIds;
     mapping(uint256 => productInfo) public allTokens;
-    mapping(address => uint256) public reportNum;
+    mapping(uint256 => mapping(address => bool)) public hasReported;
 
     event ModelRegistered(address indexed model);
     event Mint(
@@ -53,7 +53,7 @@ contract AuthPix is ERC721URIStorage {
     event Burn(address indexed model, address indexed merchant, uint256 indexed tokenId);
     event Report(address indexed user, uint256 indexed tokenId);
     event CreateRequest(address indexed merchant, address indexed model, string tokenURI);
-    event ApproveRequest(uint256 indexed id, address indexed merchant, address indexed model);
+    event ApproveRequest(uint256 indexed id, address indexed merchant, address indexed model, bool approved);
 
     //检查 token 是否存在
     function _existsToken(uint256 _tokenId) internal view returns (bool) {
@@ -104,7 +104,7 @@ contract AuthPix is ERC721URIStorage {
         }
         allRequests[_id].agrOrRejAt = block.timestamp;
 
-        emit ApproveRequest(_id, allRequests[_id].merchant, msg.sender);
+        emit ApproveRequest(_id, allRequests[_id].merchant, msg.sender, agree);
     }
 
     //商家发布商品，登记商品URI以及相关细节，需要模特同意
@@ -155,6 +155,9 @@ contract AuthPix is ERC721URIStorage {
     //举报功能，传入要举报的id
     function report(uint256 _tokenId) public {
         require(_existsToken(_tokenId), "Token not exist");
+        require(!hasReported[_tokenId][msg.sender], "Already reported");
+
+        hasReported[_tokenId][msg.sender] = true;
         allTokens[_tokenId].report = true;
 
         emit Report(msg.sender, _tokenId);
