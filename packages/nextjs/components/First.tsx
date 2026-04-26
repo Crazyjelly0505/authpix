@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { usePublicClient } from "wagmi";
-//引用样式
+import { UserInfoWithTooltip } from "~~/components/UserInfoWithTooltip";
 import { ghostBtn, inputStyle, primaryBtn, secondaryBtn } from "~~/components/ui/styles";
+import { colors, emptyStateStyle, pageContainerStyle, productCardStyle, statusColors } from "~~/components/ui/styles";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -14,9 +15,31 @@ interface RequestState {
   tokenURI: string;
 }
 
+interface Product {
+  merchant: string;
+  model: string;
+  tokenid: bigint;
+  requestAt: bigint;
+  approveAt: bigint;
+  mintAt: bigint;
+  tokenURI: string;
+  detail: string;
+  report: boolean;
+  burned: boolean;
+}
+
+// 格式化时间戳
+const formatTimestamp = (timestamp: bigint) => {
+  if (!timestamp || timestamp === 0n) return "-";
+  return new Date(Number(timestamp) * 1000).toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 export const First = () => {
-  const [product, setProduct] = useState<any[]>([]);
-  const [reportId, setReportId] = useState("");
+  const [product, setProduct] = useState<Product[]>([]);
   const [showPanel, setShowPanel] = useState(false);
   const [request, setRequest] = useState<RequestState>({
     merchant: "",
@@ -24,6 +47,8 @@ export const First = () => {
     detail: "",
     tokenURI: "",
   });
+  const [hoveredId, setHoveredId] = useState<bigint | null>(null);
+  const [reportingId, setReportingId] = useState<bigint | null>(null);
 
   const publicClient = usePublicClient();
   const { targetNetwork } = useTargetNetwork();
@@ -43,7 +68,7 @@ export const First = () => {
         args: [],
       });
 
-      const temp: any[] = [];
+      const temp: Product[] = [];
 
       for (let i = 1n; i <= (len as bigint); i++) {
         try {
@@ -53,8 +78,10 @@ export const First = () => {
             functionName: "getPhotoInfo",
             args: [i],
           });
-          temp.push(data);
-        } catch {}
+          temp.push(data as Product);
+        } catch (error) {
+          console.error(`Failed to load product ${i}:`, error);
+        }
       }
       setProduct(temp);
     }
@@ -65,10 +92,6 @@ export const First = () => {
   // ===================== Mint监听 =====================
   useEffect(() => {
     if (!publicClient || !contractData) return;
-
-    console.log("network id:", targetNetwork.id);
-    console.log("contractData:", contractData);
-    console.log("abi:", contractData?.abi);
 
     const unwatch = publicClient.watchContractEvent({
       address: contractData.address,
@@ -87,8 +110,8 @@ export const First = () => {
           });
 
           setProduct(prev => {
-            const exist = prev.find(p => String(p.tokenid) === String(tokenId));
-            return exist ? prev : [...prev, data];
+            const exist = prev.find(p => p.tokenid === tokenId);
+            return exist ? prev : [...prev, data as Product];
           });
         }
       },
@@ -98,13 +121,20 @@ export const First = () => {
   }, [publicClient, contractData]);
 
   // ===================== 合约操作 =====================
-  const reportClick = async () => {
-    if (!reportId) return;
-
-    await (writeContractAsync as any)({
-      functionName: "report",
-      args: [BigInt(reportId)],
-    });
+  const handleReport = async (tokenId: bigint) => {
+    try {
+      setReportingId(tokenId);
+      await writeContractAsync({
+        functionName: "report",
+        args: [tokenId],
+      });
+      // 更新本地状态
+      setProduct(prev => prev.map(p => (p.tokenid === tokenId ? { ...p, report: true } : p)));
+    } catch (error) {
+      console.error("举报失败:", error);
+    } finally {
+      setReportingId(null);
+    }
   };
 
   const registerClick = async () => {
@@ -114,76 +144,232 @@ export const First = () => {
   };
 
   const requestClick = async () => {
-    await (writeContractAsync as any)({
+    await writeContractAsync({
       functionName: "createRequest",
       args: [request.model, request.detail, request.tokenURI],
     });
+    setRequest({ merchant: "", model: "", detail: "", tokenURI: "" });
+    setShowPanel(false);
   };
 
   if (!publicClient || !contractData) {
-    return <div>Loading...</div>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+          color: colors.textMuted,
+        }}
+      >
+        加载中...
+      </div>
+    );
   }
 
   // ===================== UI =====================
   return (
-    <div style={{ padding: 30, background: "#f5f7fb", minHeight: "100vh" }}>
-      <h2 style={{ marginBottom: 20 }}>🖼️ AuthPix 市场</h2>
+    <div style={pageContainerStyle}>
+      {/* 空状态 */}
+      {product.length === 0 && (
+        <div style={emptyStateStyle}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🖼️</div>
+          <p style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>暂无商品</p>
+          <p style={{ fontSize: 14 }}>当有授权商品发布时，将在这里显示</p>
+        </div>
+      )}
 
-      {/* 商品 */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 20 }}>
-        {product.map((p, index) => (
+      {/* 商品网格 */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+          gap: 24,
+        }}
+      >
+        {product.map(p => (
           <div
-            key={index}
-            style={{
-              background: "#fff",
-              borderRadius: 16,
-              overflow: "hidden",
-              boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-              cursor: "pointer",
-              transition: "0.2s",
+            key={p.tokenid.toString()}
+            style={productCardStyle}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)";
             }}
           >
-            <img src={p.tokenURI} style={{ width: "100%", height: 200, objectFit: "cover" }} />
+            {/* 图片区域 */}
+            <div
+              style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden" }}
+              onMouseEnter={() => setHoveredId(p.tokenid)}
+              onMouseLeave={() => setHoveredId(null)}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={p.tokenURI}
+                alt="商品图片"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={e => {
+                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300?text=Image";
+                }}
+              />
 
-            <div style={{ padding: 12 }}>
-              <p>
-                <b>ID:</b> {p.tokenid?.toString()}
-              </p>
-              <p>
-                <b>商家:</b> {p.merchant}
-              </p>
-              <p style={{ color: "#666", fontSize: 14 }}>{p.detail}</p>
+              {/* 悬停时显示时间信息 */}
+              {hoveredId === p.tokenid && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(0,0,0,0.6)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div style={{ color: "#fff", textAlign: "center", fontSize: 13 }}>
+                    <div style={{ marginBottom: 6 }}>申请: {formatTimestamp(p.requestAt)}</div>
+                    <div style={{ marginBottom: 6 }}>批准: {formatTimestamp(p.approveAt)}</div>
+                    <div>发布: {formatTimestamp(p.mintAt)}</div>
+                  </div>
+                </div>
+              )}
 
-              <div style={{ marginTop: 8 }}>
-                {p.report && <span style={{ color: "#f59e0b" }}>⚠ 举报</span>}
-                {p.burned && <span style={{ color: "#ef4444", marginLeft: 8 }}>🚫 下架</span>}
+              {/* 状态标签 */}
+              <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
+                {p.report && (
+                  <span
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: 20,
+                      fontSize: 11,
+                      fontWeight: 500,
+                      background: statusColors.reported.bg,
+                      color: statusColors.reported.color,
+                    }}
+                  >
+                    {statusColors.reported.text}
+                  </span>
+                )}
+                {p.burned && (
+                  <span
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: 20,
+                      fontSize: 11,
+                      fontWeight: 500,
+                      background: statusColors.burned.bg,
+                      color: statusColors.burned.color,
+                    }}
+                  >
+                    {statusColors.burned.text}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 信息区域 */}
+            <div style={{ padding: 16 }}>
+              <p
+                style={{
+                  color: colors.textPrimary,
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  marginBottom: 12,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {p.detail}
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <UserInfoWithTooltip address={p.merchant} type="merchant" />
+                <UserInfoWithTooltip address={p.model} type="model" />
+              </div>
+
+              {/* 底部：ID 和 举报按钮 */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingTop: 12,
+                  borderTop: `1px solid ${colors.border}`,
+                }}
+              >
+                <span style={{ fontSize: 12, color: colors.textMuted }}>#{p.tokenid.toString()}</span>
+                {!p.burned && (
+                  <button
+                    onClick={() => handleReport(p.tokenid)}
+                    disabled={p.report || reportingId === p.tokenid}
+                    style={{
+                      fontSize: 12,
+                      color: p.report ? colors.textMuted : colors.textSecondary,
+                      background: "transparent",
+                      border: "none",
+                      cursor: p.report ? "not-allowed" : "pointer",
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={e => {
+                      if (!p.report) (e.target as HTMLButtonElement).style.color = colors.danger;
+                    }}
+                    onMouseLeave={e => {
+                      if (!p.report) (e.target as HTMLButtonElement).style.color = colors.textSecondary;
+                    }}
+                  >
+                    {p.report ? "已举报" : reportingId === p.tokenid ? "处理中..." : "举报"}
+                  </button>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ⚙ 按钮 */}
+      {/* 操作按钮 */}
       <button
         onClick={() => setShowPanel(true)}
         style={{
           position: "fixed",
           bottom: 30,
           right: 30,
-          width: 60,
-          height: 60,
+          width: 56,
+          height: 56,
           borderRadius: "50%",
-          background: "#4f46e5",
+          background: colors.primary,
           color: "#fff",
           border: "none",
-          fontSize: 24,
+          fontSize: 20,
           cursor: "pointer",
+          boxShadow: "0 4px 12px rgba(79, 70, 229, 0.4)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "transform 0.2s",
+        }}
+        onMouseEnter={e => {
+          (e.target as HTMLButtonElement).style.transform = "scale(1.05)";
+        }}
+        onMouseLeave={e => {
+          (e.target as HTMLButtonElement).style.transform = "scale(1)";
         }}
       >
-        ⚙
+        +
       </button>
 
-      {/* ===================== 面板 ===================== */}
+      {/* 操作面板 */}
       {showPanel && (
         <div
           onClick={() => setShowPanel(false)}
@@ -194,39 +380,32 @@ export const First = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            backdropFilter: "blur(4px)",
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
               background: "#fff",
-              padding: 20,
+              padding: 24,
               borderRadius: 16,
-              width: 320,
+              width: 340,
               display: "flex",
               flexDirection: "column",
               gap: 12,
+              boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
             }}
           >
-            <h3>操作面板</h3>
-
-            {/* 举报 */}
-            <input
-              value={reportId}
-              onChange={e => setReportId(e.target.value)}
-              placeholder="输入ID举报"
-              style={inputStyle}
-            />
-            <button onClick={reportClick} style={primaryBtn}>
-              举报
-            </button>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: 18, fontWeight: 600 }}>操作面板</h3>
 
             {/* 注册 */}
             <button onClick={registerClick} style={secondaryBtn}>
               注册成为模特
             </button>
 
-            {/* 请求 */}
+            <div style={{ height: 1, background: "#e5e7eb", margin: "8px 0" }} />
+
+            {/* 发送请求 */}
             <input
               value={request.model}
               onChange={e => setRequest(v => ({ ...v, model: e.target.value }))}
@@ -237,19 +416,19 @@ export const First = () => {
             <input
               value={request.detail}
               onChange={e => setRequest(v => ({ ...v, detail: e.target.value }))}
-              placeholder="详情"
+              placeholder="商品详情描述"
               style={inputStyle}
             />
 
             <input
               value={request.tokenURI}
               onChange={e => setRequest(v => ({ ...v, tokenURI: e.target.value }))}
-              placeholder="TokenURI"
+              placeholder="图片URL"
               style={inputStyle}
             />
 
             <button onClick={requestClick} style={primaryBtn}>
-              发送请求
+              发送授权请求
             </button>
 
             <button onClick={() => setShowPanel(false)} style={ghostBtn}>

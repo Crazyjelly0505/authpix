@@ -5,9 +5,9 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
-  11155111: {
+  31337: {
     AuthPix: {
-      address: "0x0424Fa8109B10Bc0d4f1B366836d49c56CaFb5F5",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -171,6 +171,37 @@ const deployedContracts = {
           anonymous: false,
           inputs: [
             {
+              indexed: true,
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "bool",
+              name: "approved",
+              type: "bool",
+            },
+          ],
+          name: "ApproveRequest",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
               indexed: false,
               internalType: "uint256",
               name: "_fromTokenId",
@@ -209,6 +240,31 @@ const deployedContracts = {
             },
           ],
           name: "Burn",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+          ],
+          name: "CreateRequest",
           type: "event",
         },
         {
@@ -274,6 +330,25 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "Report",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
               name: "from",
               type: "address",
             },
@@ -297,13 +372,59 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "uint256",
-              name: "_tokenId",
+              name: "",
               type: "uint256",
             },
           ],
-          name: "agreeBurn",
-          outputs: [],
-          stateMutability: "nonpayable",
+          name: "allRequests",
+          outputs: [
+            {
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "detail",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "createAt",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "agrOrRejAt",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "isApproved",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isReject",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isMinted",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -317,9 +438,54 @@ const deployedContracts = {
           name: "allTokens",
           outputs: [
             {
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
               internalType: "uint256",
-              name: "",
+              name: "tokenid",
               type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "requestAt",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "approveAt",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "mintAt",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "detail",
+              type: "string",
+            },
+            {
+              internalType: "bool",
+              name: "report",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "burned",
+              type: "bool",
             },
           ],
           stateMutability: "view",
@@ -339,6 +505,24 @@ const deployedContracts = {
             },
           ],
           name: "approve",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_id",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "agree",
+              type: "bool",
+            },
+          ],
+          name: "approveRequest",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -376,16 +560,26 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [],
-          name: "getAllTokens",
-          outputs: [
+          inputs: [
             {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
+              internalType: "address",
+              name: "_model",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "_detail",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_tokenURI",
+              type: "string",
             },
           ],
-          stateMutability: "view",
+          name: "createRequest",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -410,6 +604,44 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "address",
+              name: "_merchant",
+              type: "address",
+            },
+          ],
+          name: "getMerchantCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_model",
+              type: "address",
+            },
+          ],
+          name: "getModelCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "uint256",
               name: "_tokenId",
               type: "uint256",
@@ -418,19 +650,181 @@ const deployedContracts = {
           name: "getPhotoInfo",
           outputs: [
             {
-              internalType: "address",
-              name: "_model",
-              type: "address",
+              components: [
+                {
+                  internalType: "address",
+                  name: "merchant",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "model",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "tokenid",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "requestAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "approveAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "mintAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "tokenURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "detail",
+                  type: "string",
+                },
+                {
+                  internalType: "bool",
+                  name: "report",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "burned",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct AuthPix.productInfo",
+              name: "",
+              type: "tuple",
             },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getRequestsForMerchant",
+          outputs: [
             {
-              internalType: "address",
-              name: "_merchant",
-              type: "address",
+              components: [
+                {
+                  internalType: "address",
+                  name: "merchant",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "model",
+                  type: "address",
+                },
+                {
+                  internalType: "string",
+                  name: "tokenURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "detail",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "createAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "agrOrRejAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "bool",
+                  name: "isApproved",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isReject",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isMinted",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct AuthPix.Request[]",
+              name: "",
+              type: "tuple[]",
             },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getRequestsForModel",
+          outputs: [
             {
-              internalType: "string",
-              name: "_tokenURI",
-              type: "string",
+              components: [
+                {
+                  internalType: "address",
+                  name: "merchant",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "model",
+                  type: "address",
+                },
+                {
+                  internalType: "string",
+                  name: "tokenURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "detail",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "createAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "agrOrRejAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "bool",
+                  name: "isApproved",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isReject",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isMinted",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct AuthPix.Request[]",
+              name: "",
+              type: "tuple[]",
             },
           ],
           stateMutability: "view",
@@ -439,36 +833,22 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+            {
               internalType: "address",
-              name: "_merchant",
+              name: "",
               type: "address",
             },
           ],
-          name: "getTokensByMerchant",
+          name: "hasReported",
           outputs: [
             {
-              internalType: "uint256[]",
+              internalType: "bool",
               name: "",
-              type: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "_model",
-              type: "address",
-            },
-          ],
-          name: "getTokensByModel",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
+              type: "bool",
             },
           ],
           stateMutability: "view",
@@ -520,17 +900,22 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
               internalType: "uint256",
               name: "",
               type: "uint256",
             },
           ],
-          name: "merchantAgree",
+          name: "merchantToRequestIds",
           outputs: [
             {
-              internalType: "bool",
+              internalType: "uint256",
               name: "",
-              type: "bool",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -540,32 +925,8 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "uint256",
-              name: "",
+              name: "_id",
               type: "uint256",
-            },
-          ],
-          name: "merchantOf",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "string",
-              name: "_tokenURI",
-              type: "string",
-            },
-            {
-              internalType: "address",
-              name: "_merchant",
-              type: "address",
             },
           ],
           name: "mint",
@@ -576,36 +937,22 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          name: "modelAgree",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          name: "modelOf",
-          outputs: [
-            {
               internalType: "address",
               name: "",
               type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "modelToRequest",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -659,6 +1006,19 @@ const deployedContracts = {
         {
           inputs: [],
           name: "registerModel",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "report",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -832,8 +1192,1222 @@ const deployedContracts = {
           type: "function",
         },
         {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "transferFrom",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {
+        approve: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        balanceOf: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        getApproved: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        isApprovedForAll: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        name: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        ownerOf: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        safeTransferFrom: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        setApprovalForAll: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        supportsInterface: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        symbol: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        tokenURI: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        transferFrom: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+      },
+      deployedOnBlock: 1,
+    },
+  },
+  11155111: {
+    AuthPix: {
+      address: "0x67d5137bbEF00f8562958fEC536aA1D067C41Cb2",
+      abi: [
+        {
           inputs: [],
-          name: "totalSupply",
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+          ],
+          name: "ERC721IncorrectOwner",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "ERC721InsufficientApproval",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "approver",
+              type: "address",
+            },
+          ],
+          name: "ERC721InvalidApprover",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+          ],
+          name: "ERC721InvalidOperator",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+          ],
+          name: "ERC721InvalidOwner",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "receiver",
+              type: "address",
+            },
+          ],
+          name: "ERC721InvalidReceiver",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "ERC721InvalidSender",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "ERC721NonexistentToken",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "approved",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "Approval",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "bool",
+              name: "approved",
+              type: "bool",
+            },
+          ],
+          name: "ApprovalForAll",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "bool",
+              name: "approved",
+              type: "bool",
+            },
+          ],
+          name: "ApproveRequest",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "_fromTokenId",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "_toTokenId",
+              type: "uint256",
+            },
+          ],
+          name: "BatchMetadataUpdate",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "Burn",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+          ],
+          name: "CreateRequest",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "_tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "MetadataUpdate",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+          ],
+          name: "Mint",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+          ],
+          name: "ModelRegistered",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "Report",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "Transfer",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "allRequests",
+          outputs: [
+            {
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "detail",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "createAt",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "agrOrRejAt",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "isApproved",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isReject",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isMinted",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "allTokens",
+          outputs: [
+            {
+              internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "model",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenid",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "requestAt",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "approveAt",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "mintAt",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "tokenURI",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "detail",
+              type: "string",
+            },
+            {
+              internalType: "bool",
+              name: "report",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "burned",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "approve",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_id",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "agree",
+              type: "bool",
+            },
+          ],
+          name: "approveRequest",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+          ],
+          name: "balanceOf",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "burn",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_model",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "_detail",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_tokenURI",
+              type: "string",
+            },
+          ],
+          name: "createRequest",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "getApproved",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_merchant",
+              type: "address",
+            },
+          ],
+          name: "getMerchantCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_model",
+              type: "address",
+            },
+          ],
+          name: "getModelCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "getPhotoInfo",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "merchant",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "model",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "tokenid",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "requestAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "approveAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "mintAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "tokenURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "detail",
+                  type: "string",
+                },
+                {
+                  internalType: "bool",
+                  name: "report",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "burned",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct AuthPix.productInfo",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getRequestsForMerchant",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "merchant",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "model",
+                  type: "address",
+                },
+                {
+                  internalType: "string",
+                  name: "tokenURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "detail",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "createAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "agrOrRejAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "bool",
+                  name: "isApproved",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isReject",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isMinted",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct AuthPix.Request[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getRequestsForModel",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "merchant",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "model",
+                  type: "address",
+                },
+                {
+                  internalType: "string",
+                  name: "tokenURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "detail",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "createAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "agrOrRejAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "bool",
+                  name: "isApproved",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isReject",
+                  type: "bool",
+                },
+                {
+                  internalType: "bool",
+                  name: "isMinted",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct AuthPix.Request[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "hasReported",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+          ],
+          name: "isApprovedForAll",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "isModel",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "merchantToRequestIds",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_id",
+              type: "uint256",
+            },
+          ],
+          name: "mint",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "modelToRequest",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "name",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "nextTokenId",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "ownerOf",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "registerModel",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "report",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "safeTransferFrom",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "data",
+              type: "bytes",
+            },
+          ],
+          name: "safeTransferFrom",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              internalType: "bool",
+              name: "approved",
+              type: "bool",
+            },
+          ],
+          name: "setApprovalForAll",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes4",
+              name: "interfaceId",
+              type: "bytes4",
+            },
+          ],
+          name: "supportsInterface",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "symbol",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "tokenId",
+              type: "uint256",
+            },
+          ],
+          name: "tokenURI",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "tokensByMerchant",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "tokensByModel",
           outputs: [
             {
               internalType: "uint256",
@@ -882,7 +2456,7 @@ const deployedContracts = {
         tokenURI: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
         transferFrom: "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
       },
-      deployedOnBlock: 10587345,
+      deployedOnBlock: 10734356,
     },
   },
 } as const;

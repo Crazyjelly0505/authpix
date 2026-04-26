@@ -3,85 +3,101 @@
 <div align="center">
   <img src="packages/nextjs/public/logo.png" alt="AuthPix Logo" width="200" />
 
-  **Decentralized Image Authentication Protocol**
+  **去中心化服装图片授权协议**
 
-  为买家提供实拍保障 · 保护创作者合法权益
+  为模特提供版权保护 · 为商家提供授权凭证 · 为买家提供真实验证
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Network: Sepolia](https://img.shields.io/badge/Network-Sepolia-blue)](https://sepolia.etherscan.io/)
 </div>
 
 ---
 
 ## 📖 项目背景
 
-在电商蓬勃发展的今天，商品图片的真实性问题日益突出：
+在服装电商蓬勃发展的今天，商品图片的真实性和授权问题日益突出：
 
-- **买家困扰**：商家盗用精美图片，实物与图片严重不符，消费者权益受损
-- **创作者困境**：摄影师、模特的原创作品被随意盗用，劳动成果得不到尊重
-- **信任危机**：买卖双方缺乏有效的信任机制，平台公信力不足
+- **模特困扰**：照片被商家盗用，肖像权无法得到保障
+- **商家困境**：使用未经授权的图片面临法律风险
+- **买家担忧**：商品图片与实物不符，消费体验差
 
-**AuthPix** 应运而生 —— 一个基于区块链的去中心化图片认证协议。
+**AuthPix** 应运而生 —— 一个专注于服装行业的去中心化图片授权协议。
 
 ---
 
-## 🎯 创作意图
-
-### 对于买家
-- 🔍 **真实验证**：通过 NFT 确权，验证商品图片的真实来源
-- 🛡️ **权益保障**：购买的商品图片经过认证，避免"货不对板"
-- 📜 **溯源追踪**：清晰记录图片从拍摄到销售的全过程
-
-### 对于商家
-- 📸 **原创保护**：上传实拍图铸造 NFT，确立图片所有权
-- ⭐ **信誉积累**：真实商品图片建立商家信誉，赢得消费者信任
-- 💼 **商业价值**：认证图片成为商家的数字资产
+## 🎯 解决方案
 
 ### 对于模特/创作者
 - 🎨 **版权确权**：作品上链存证，版权归属清晰可查
-- 💰 **收益保障**：与商家建立授权关系，权益受到保护
-- 🤝 **合作透明**：双方确认机制，确保创作得到认可
+- ✅ **授权管理**：自主决定是否授权商家使用图片
+- 💰 **权益保障**：与商家建立透明授权关系
+
+### 对于商家
+- 📸 **合规使用**：获得模特授权后合法使用图片
+- ⭐ **信誉积累**：展示授权凭证，赢得消费者信任
+- 🛡️ **风险规避**：避免侵权纠纷
+
+### 对于买家
+- 🔍 **真实验证**：查看图片授权状态，确认商品真实性
+- 📜 **溯源追踪**：了解图片来源和授权历史
 
 ---
 
 ## ✨ 核心功能
 
-| 功能 | Model / Creator | Merchant / User |
-|------|-----------------|-----------------|
-| 注册身份 | ✅ | - |
-| 铸造 NFT | ✅ | - |
-| 查询图片信息 | ✅ | ✅ |
-| 按地址筛选 | ✅ | ✅ |
-| 同意销毁 | ✅ | ✅ (相关方) |
-| 确认销毁 | ✅ | ✅ (双方同意后) |
+### 智能合约功能
+
+| 功能 | 描述 | 角色 |
+|------|------|------|
+| `registerModel` | 注册成为模特 | 模特 |
+| `createRequest` | 发送授权请求 | 商家 |
+| `approveRequest` | 批准/拒绝请求 | 模特 |
+| `mint` | 铸造NFT商品 | 商家 |
+| `burn` | 下架商品 | 商家 |
+| `report` | 举报违规商品 | 任何用户 |
 
 ### 工作流程
 
 ```
 模特/创作者                      商家
     │                            │
-    │  1. 注册成为 Model          │
-    │───────────────────────────>│
+    │  1. 注册成为模特            │
+    │────────────────────────────>
     │                            │
-    │  2. 铸造 NFT (IPFS + 商家地址)
-    │───────────────────────────>│
+    │         2. 发送授权请求      │
+    │<────────────────────────────
+    │     (图片URL + 商品详情)     │
     │                            │
-    │       NFT 记录图片信息       │
-    │<──────────────────────────>│
+    │  3. 审批请求 (同意/拒绝)      │
+    │────────────────────────────>
     │                            │
-    │  3. 双方确认后可销毁 NFT      │
-    │<──────────────────────────>│
+    │         4. 铸造NFT商品        │
+    │<────────────────────────────
+    │                            │
+    │       ✅ 授权完成            │
+    │<───────────────────────────>│
 ```
+
+### 前端特性
+
+- 🖼️ **商品展示**：网格布局展示授权商品，悬停查看时间线
+- 👤 **用户信息**：悬停显示商家/模特详细信息和发布数量
+- 🔔 **通知中心**：双角色视图切换（收到的请求/发出的请求）
+- ⚠️ **举报功能**：一键举报违规商品
+- 📱 **响应式设计**：适配桌面和移动端
 
 ---
 
 ## 🛠️ 技术栈
 
-- **智能合约**: Solidity + Hardhat + OpenZeppelin
-- **前端框架**: Next.js + TypeScript
-- **Web3 基础设施**: Scaffold-ETH 2 + Wagmi + Viem
-- **钱包连接**: RainbowKit
-- **UI 组件**: DaisyUI + Tailwind CSS
-- **存储**: IPFS (去中心化存储)
+| 类别 | 技术 |
+|------|------|
+| 智能合约 | Solidity + Hardhat + OpenZeppelin ERC721 |
+| 前端框架 | Next.js 15 + TypeScript |
+| Web3 基础设施 | Scaffold-ETH 2 + Wagmi + Viem |
+| 钱包连接 | RainbowKit |
+| UI 组件 | DaisyUI + Tailwind CSS |
+| 存储 | IPFS (Pinata) |
 
 ---
 
@@ -89,32 +105,28 @@
 
 ### 环境要求
 
-- Node.js >= 18
-- Yarn 或 npm
+- Node.js >= 20
+- Yarn 3.x
 - MetaMask 或其他 Web3 钱包
-
-### 安装依赖
-
-```bash
-git clone https://github.com/your-username/authpix.git
-cd authpix
-yarn install
-```
 
 ### 本地开发
 
 ```bash
+# 克隆项目
+git clone https://github.com/your-username/authpix.git
+cd authpix
+
+# 安装依赖
+yarn install
+
 # 终端 1: 启动本地区块链
-cd packages/hardhat
 yarn chain
 
-# 终端 2: 部署合约
-cd packages/hardhat
+# 终端 2: 部署合约 (自动生成测试数据)
 yarn deploy
 
 # 终端 3: 启动前端
-cd packages/nextjs
-yarn dev
+yarn start
 ```
 
 访问 http://localhost:3000 查看应用。
@@ -122,19 +134,20 @@ yarn dev
 ### 部署到测试网
 
 ```bash
-# 1. 配置环境变量
-cd packages/hardhat
-cp .env.example .env
-# 编辑 .env 填入你的配置
+# 1. 配置部署账户
+yarn account:import  # 导入私钥
+# 或
+yarn account:generate  # 生成新账户
 
-# 2. 导入钱包
-yarn account:import
-
-# 3. 获取 Sepolia 测试 ETH
+# 2. 获取 Sepolia 测试 ETH
 # https://sepoliafaucet.com
+# https://faucets.chain.link/sepolia
 
-# 4. 部署合约
+# 3. 部署合约
 yarn deploy --network sepolia
+
+# 4. 部署前端到 Vercel
+yarn vercel
 ```
 
 ---
@@ -144,31 +157,58 @@ yarn deploy --network sepolia
 ```
 authpix/
 ├── packages/
-│   ├── hardhat/                 # 智能合约
+│   ├── hardhat/                    # 智能合约
 │   │   ├── contracts/
-│   │   │   └── AuthPix.sol      # 核心合约
-│   │   ├── deploy/              # 部署脚本
-│   │   └── test/                # 合约测试
+│   │   │   └── AuthPix.sol         # 核心合约
+│   │   ├── deploy/
+│   │   │   ├── deploy_contract.ts  # 合约部署
+│   │   │   └── seed_test_data.ts   # 测试数据
+│   │   └── test/
+│   │       └── AuthPix.ts          # 合约测试
 │   │
-│   └── nextjs/                  # 前端应用
-│       ├── app/                 # Next.js 页面
-│       ├── components/          # React 组件
-│       │   ├── Welcome.tsx      # 身份选择
-│       │   ├── Model.tsx        # 模特面板
-│       │   └── User.tsx         # 用户面板
-│       └── public/              # 静态资源
+│   └── nextjs/                     # 前端应用
+│       ├── app/
+│       │   └── page.tsx            # 主页面
+│       ├── components/
+│       │   ├── First.tsx           # 商品展示页
+│       │   ├── Notice.tsx          # 通知中心
+│       │   ├── Header.tsx          # 导航栏
+│       │   └── UserInfoWithTooltip.tsx  # 用户信息组件
+│       ├── contracts/
+│       │   └── deployedContracts.ts # 合约 ABI
+│       └── hooks/scaffold-eth/     # Web3 Hooks
 │
+├── scaffold.config.ts              # 网络配置
 └── README.md
 ```
+
+---
+
+## 🔗 合约信息
+
+### Sepolia 测试网
+
+- **合约地址**: `0x67d5137bbEF00f8562958fEC536aA1D067C41Cb2`
+- **浏览器**: [Etherscan](https://sepolia.etherscan.io/address/0x67d5137bbEF00f8562958fEC536aA1D067C41Cb2)
 
 ---
 
 ## 🔐 安全说明
 
 - 所有图片信息存储在 IPFS，确保不可篡改
-- NFT 权益关系记录在区块链上，公开透明
-- 销毁操作需双方确认，防止单方面恶意操作
+- 授权关系记录在区块链上，公开透明
+- 商家只能在模特批准后铸造 NFT
+- 举报功能帮助社区监督违规内容
 - 请妥善保管钱包私钥，切勿泄露
+
+---
+
+## 🗓️ 开发历程
+
+- **2025.04** - 项目启动，完成核心合约开发
+- **2025.04** - 实现请求-批准-铸造流程
+- **2025.04** - 前端 UI 重构，添加用户体验优化
+- **2025.04** - 部署到 Sepolia 测试网
 
 ---
 
@@ -180,7 +220,7 @@ authpix/
 
 <div align="center">
 
-**让每一张商品图都有迹可循，让每一位创作者都得到尊重。**
+**让每一次授权都有据可查，让每一位创作者都得到尊重。**
 
 Made with ❤️ by AuthPix Team
 
