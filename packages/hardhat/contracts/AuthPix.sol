@@ -23,6 +23,7 @@ contract AuthPix is ERC721URIStorage {
     }
 
     struct Request{
+        uint256 id;
         address merchant;
         address model;
         string tokenURI;
@@ -71,8 +72,9 @@ contract AuthPix is ERC721URIStorage {
         require(isModel[_model], "Invalid model");
         uint256 newId = allRequests.length;        
         Request storage newReq = allRequests.push();
-    
+
         // 强制设定的系统字段
+        newReq.id = newId;
         newReq.merchant = msg.sender;
         newReq.createAt = block.timestamp;
         newReq.agrOrRejAt = 0;
@@ -180,22 +182,22 @@ contract AuthPix is ERC721URIStorage {
     }
 
     //返回模特收到的所有请求，用于给模特展示
-    function getRequestsForModel() public view returns(Request[] memory) {
-        uint256[] storage requestIds = modelToRequest[msg.sender];
-        uint256 len = modelToRequest[msg.sender].length;
+    function getRequestsForModel(address _model) public view returns(Request[] memory) {
+        uint256[] storage requestIds = modelToRequest[_model];
+        uint256 len = requestIds.length;
         Request[] memory myRequest = new Request[](len);
-        
+
         for(uint256 i=0; i<len; i++){
             uint256 id = requestIds[i];
-            myRequest[i] = allRequests[id]; 
+            myRequest[i] = allRequests[id];
         }
 
         return myRequest;
     }
 
     //返回商家发送的所有请求，用于给商家展示
-    function getRequestsForMerchant() public view returns(Request[] memory){
-        uint256[] storage requestIds = merchantToRequestIds[msg.sender];
+    function getRequestsForMerchant(address _merchant) public view returns(Request[] memory){
+        uint256[] storage requestIds = merchantToRequestIds[_merchant];
         uint256 len = requestIds.length;
         Request[] memory myRequest = new Request[](len);
 

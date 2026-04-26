@@ -255,24 +255,23 @@ describe("AuthPix", function () {
   describe("getRequestsForModel", function () {
     it("should return requests correctly", async function () {
       const { apix, model } = await deployWithRequest();
-      const reqs = await apix.connect(model).getRequestsForModel();
+      const reqs = await apix.getRequestsForModel(model.address);
       expect(reqs.length).to.equal(1);
       expect(reqs[0].model).to.equal(model.address);
     });
 
     it("should return empty if no requests", async function () {
       const { apix, user } = await deployWithRequest();
-      await apix.connect(user).registerModel();
-      const reqs = await apix.connect(user).getRequestsForModel();
+      const reqs = await apix.getRequestsForModel(user.address);
       expect(reqs.length).to.equal(0);
     });
 
     it("should reflect state changes", async function () {
       const { apix, model, requestId } = await deployWithRequest();
-      let reqs = await apix.connect(model).getRequestsForModel();
+      let reqs = await apix.getRequestsForModel(model.address);
       expect(reqs[0].isApproved).to.equal(false);
       await apix.connect(model).approveRequest(requestId, true);
-      reqs = await apix.connect(model).getRequestsForModel();
+      reqs = await apix.getRequestsForModel(model.address);
       expect(reqs[0].isApproved).to.equal(true);
     });
   });
@@ -280,21 +279,21 @@ describe("AuthPix", function () {
   describe("getRequestsForMerchant", function () {
     it("should return requests correctly", async function () {
       const { apix, merchant } = await deployWithRequest();
-      const reqs = await apix.connect(merchant).getRequestsForMerchant();
+      const reqs = await apix.getRequestsForMerchant(merchant.address);
       expect(reqs.length).to.equal(1);
       expect(reqs[0].merchant).to.equal(merchant.address);
     });
 
     it("should return empty if no requests", async function () {
       const { apix, user } = await deployWithRequest();
-      const reqs = await apix.connect(user).getRequestsForMerchant();
+      const reqs = await apix.getRequestsForMerchant(user.address);
       expect(reqs.length).to.equal(0);
     });
 
     it("should return multiple requests", async function () {
       const { apix, merchant, model } = await deployWithRequest();
       await apix.connect(merchant).createRequest(model.address, "detail2", "ipfs://test2");
-      const reqs = await apix.connect(merchant).getRequestsForMerchant();
+      const reqs = await apix.getRequestsForMerchant(merchant.address);
       expect(reqs.length).to.equal(2);
     });
   });

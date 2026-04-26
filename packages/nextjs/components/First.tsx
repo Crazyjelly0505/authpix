@@ -49,6 +49,8 @@ export const First = () => {
   });
   const [hoveredId, setHoveredId] = useState<bigint | null>(null);
   const [reportingId, setReportingId] = useState<bigint | null>(null);
+  const [registering, setRegistering] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const publicClient = usePublicClient();
   const { targetNetwork } = useTargetNetwork();
@@ -138,18 +140,36 @@ export const First = () => {
   };
 
   const registerClick = async () => {
-    await writeContractAsync({
-      functionName: "registerModel",
-    });
+    try {
+      setRegistering(true);
+      await writeContractAsync({
+        functionName: "registerModel",
+      });
+    } catch (e) {
+      console.error("注册失败:", e);
+    } finally {
+      setRegistering(false);
+    }
   };
 
   const requestClick = async () => {
-    await writeContractAsync({
-      functionName: "createRequest",
-      args: [request.model, request.detail, request.tokenURI],
-    });
-    setRequest({ merchant: "", model: "", detail: "", tokenURI: "" });
-    setShowPanel(false);
+    if (!request.model || !request.detail || !request.tokenURI) {
+      alert("请填写完整信息");
+      return;
+    }
+    try {
+      setSending(true);
+      await writeContractAsync({
+        functionName: "createRequest",
+        args: [request.model, request.detail, request.tokenURI],
+      });
+      setRequest({ merchant: "", model: "", detail: "", tokenURI: "" });
+      setShowPanel(false);
+    } catch (e) {
+      console.error("发送请求失败:", e);
+    } finally {
+      setSending(false);
+    }
   };
 
   if (!publicClient || !contractData) {
@@ -399,8 +419,12 @@ export const First = () => {
             <h3 style={{ margin: "0 0 8px 0", fontSize: 18, fontWeight: 600 }}>操作面板</h3>
 
             {/* 注册 */}
-            <button onClick={registerClick} style={secondaryBtn}>
-              注册成为模特
+            <button
+              onClick={registerClick}
+              disabled={registering}
+              style={{ ...secondaryBtn, opacity: registering ? 0.6 : 1 }}
+            >
+              {registering ? "注册中..." : "注册成为模特"}
             </button>
 
             <div style={{ height: 1, background: "#e5e7eb", margin: "8px 0" }} />
@@ -427,8 +451,8 @@ export const First = () => {
               style={inputStyle}
             />
 
-            <button onClick={requestClick} style={primaryBtn}>
-              发送授权请求
+            <button onClick={requestClick} disabled={sending} style={{ ...primaryBtn, opacity: sending ? 0.6 : 1 }}>
+              {sending ? "发送中..." : "发送授权请求"}
             </button>
 
             <button onClick={() => setShowPanel(false)} style={ghostBtn}>

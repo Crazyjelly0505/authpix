@@ -21,6 +21,7 @@ import { useScaffoldReadContract, useScaffoldWriteContract, useTargetNetwork } f
 type ViewMode = "received" | "sent";
 
 interface Request {
+  id: bigint;
   merchant: string;
   model: string;
   tokenURI: string;
@@ -55,7 +56,7 @@ export const Notice = () => {
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const [viewMode, setViewMode] = useState<ViewMode>("received");
-  const [processingId, setProcessingId] = useState<number | null>(null);
+  const [processingId, setProcessingId] = useState<bigint | null>(null);
 
   const { targetNetwork } = useTargetNetwork();
   const contractData = (deployedContracts as any)[targetNetwork.id]?.AuthPix;
@@ -64,12 +65,16 @@ export const Notice = () => {
   const { data: receivedRequests, refetch: refetchReceived } = useScaffoldReadContract({
     contractName: "AuthPix",
     functionName: "getRequestsForModel",
+    args: [address],
+    watch: true,
   });
 
   // 获取商家发出的请求
   const { data: sentRequests, refetch: refetchSent } = useScaffoldReadContract({
     contractName: "AuthPix",
     functionName: "getRequestsForMerchant",
+    args: [address],
+    watch: true,
   });
 
   const { writeContractAsync } = useScaffoldWriteContract({
@@ -93,31 +98,33 @@ export const Notice = () => {
     return () => unwatch?.();
   }, [address, publicClient, contractData, refetchReceived, refetchSent]);
 
-  const handleApprove = async (id: number, agree: boolean) => {
+  const handleApprove = async (id: bigint, agree: boolean) => {
     try {
       setProcessingId(id);
       await writeContractAsync({
         functionName: "approveRequest",
-        args: [BigInt(id), agree],
+        args: [id, agree],
       });
       refetchReceived();
     } catch (e) {
       console.error(e);
+      alert(agree ? "同意请求失败" : "拒绝请求失败");
     } finally {
       setProcessingId(null);
     }
   };
 
-  const handleMint = async (id: number) => {
+  const handleMint = async (id: bigint) => {
     try {
       setProcessingId(id);
       await writeContractAsync({
         functionName: "mint",
-        args: [BigInt(id)],
+        args: [id],
       });
       refetchSent();
     } catch (e) {
       console.error(e);
+      alert("铸造失败");
     } finally {
       setProcessingId(null);
     }
@@ -254,15 +261,15 @@ export const Notice = () => {
                     {viewMode === "received" && !req.isApproved && !req.isReject && (
                       <>
                         <button
-                          onClick={() => handleApprove(index, true)}
-                          disabled={processingId === index}
-                          style={{ ...smallPrimaryBtn, opacity: processingId === index ? 0.6 : 1 }}
+                          onClick={() => handleApprove(req.id, true)}
+                          disabled={processingId === req.id}
+                          style={{ ...smallPrimaryBtn, opacity: processingId === req.id ? 0.6 : 1 }}
                         >
                           同意
                         </button>
                         <button
-                          onClick={() => handleApprove(index, false)}
-                          disabled={processingId === index}
+                          onClick={() => handleApprove(req.id, false)}
+                          disabled={processingId === req.id}
                           style={smallSecondaryBtn}
                         >
                           拒绝
@@ -273,11 +280,11 @@ export const Notice = () => {
                     {/* 商家视图：铸造 */}
                     {viewMode === "sent" && req.isApproved && !req.isMinted && (
                       <button
-                        onClick={() => handleMint(index)}
-                        disabled={processingId === index}
-                        style={{ ...smallSuccessBtn, opacity: processingId === index ? 0.6 : 1 }}
+                        onClick={() => handleMint(req.id)}
+                        disabled={processingId === req.id}
+                        style={{ ...smallSuccessBtn, opacity: processingId === req.id ? 0.6 : 1 }}
                       >
-                        {processingId === index ? "铸造中..." : "铸造NFT"}
+                        {processingId === req.id ? "铸造中..." : "铸造NFT"}
                       </button>
                     )}
                   </div>
